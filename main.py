@@ -1,6 +1,7 @@
 from enum import Enum
 from copy import deepcopy
 from suds.client import Client
+from colorama import init, Fore, Back, Style
 
 
 class FarsNet:
@@ -54,8 +55,9 @@ class CrossWord:
         inp = input('مختصات خانه‌های سیاه جدول را در هر سطر وارد کنید و در انتها مقدار end را وارد کنید:\n')
         while inp != 'end':
             x, y = map(int, inp.split())
-            self.add_blocked_cell(x-1, y-1)
+            self.add_blocked_cell(x - 1, y - 1)
             inp = input()
+        self.print_table(True)
 
     def read_questions(self):
         question_number = 1
@@ -69,13 +71,13 @@ class CrossWord:
                 if j - y < 2:
                     y = j + 1
                     continue
-                print('سوال', str(question_number), ': افقی - خانه', f'({x+1}, {y+1}) -', 'طول:', str(j-y))
+                print('سوال', str(question_number), ': افقی - خانه', f'({x + 1}, {y + 1}) -', 'طول:', str(j - y))
                 q = input()
                 question_number += 1
-                question = Question(q, x, y, j-y, direction)
+                question = Question(q, x, y, j - y, direction)
                 question.add_possible_answers(self.farsnet.get_synonyms(q))
                 self.questions.append(question)
-                y = j+1
+                y = j + 1
         direction = Direction.VERTICAL
         for j in range(self.cols):
             x = 0
@@ -86,7 +88,7 @@ class CrossWord:
                 if i - x < 2:
                     x = i + 1
                     continue
-                print('سوال', str(question_number), ': عمودی - خانه', f'({x+1}, {y+1}) -', 'طول:', str(i-y))
+                print('سوال', str(question_number), ': عمودی - خانه', f'({x + 1}, {y + 1}) -', 'طول:', str(i - y))
                 q = input()
                 question_number += 1
                 question = Question(q, x, y, i - x, direction)
@@ -94,22 +96,35 @@ class CrossWord:
                 self.questions.append(question)
                 x = i + 1
 
-    def print_table(self):
+    def print_table(self, is_empty: bool = False):
         for j in range(self.cols - 1, -1, -1):
-            print(f'  {j+1} ', end='')
+            print(f'  {j + 1} ', end='')
         print()
-        print('-' * (4 * self.cols + 1))
+        if not is_empty:
+            print(' ', end='')
+        print(Style.BRIGHT + Back.BLACK + Fore.LIGHTWHITE_EX + "-" * (4 * self.cols + 1))
+        start_col, end_col, step = 0, self.cols, 1
+        if is_empty:
+            start_col, end_col, step = self.cols - 1, -1, -1
         for i in range(self.rows):
-            print(f'{i+1} ', end='')
-            for j in range(self.cols):
+            if not is_empty:
+                print(f' {i + 1} ', end='')
+            for j in range(start_col, end_col, step):
                 value = self.crossword_table[i][j]
                 if not value:
                     value = ' '
-                if j != self.cols-1:
-                    print('| ' + value, end=' ')
+                if value == '#':
+                    print(Style.BRIGHT + Back.BLACK + Fore.LIGHTWHITE_EX + '|', end='')
+                    print(Style.BRIGHT + Back.LIGHTWHITE_EX + Fore.LIGHTWHITE_EX + f' {value} ', end='')
                 else:
-                    print(f'| {value} |')
-            print('-' * (4 * self.cols + 1))
+                    print(Style.BRIGHT + Back.BLACK + Fore.LIGHTWHITE_EX + f'| {value} ', end='')
+            print(Style.BRIGHT + Back.BLACK + Fore.LIGHTWHITE_EX + '|', end='')
+            if is_empty:
+                print(f' {i + 1} ', end='')
+            print()
+            if not is_empty:
+                print(' ', end='')
+            print(Style.BRIGHT + Back.BLACK + Fore.LIGHTWHITE_EX + '-' * (4 * self.cols + 1))
 
     def solve(self):
         returned_table = self.csp(self.crossword_table, 0)
@@ -153,6 +168,7 @@ def main():
     rows = int(input('تعداد سطرهای جدول:\n'))
     cols = int(input('تعداد ستون‌های جدول:\n'))
     crossword = CrossWord(rows, cols)
+    crossword.print_table(True)
     crossword.read_blocked_cells()
     crossword.read_questions()
     crossword.solve()
@@ -160,4 +176,5 @@ def main():
 
 if __name__ == '__main__':
     crossword: CrossWord
+    init(autoreset=True)
     main()
