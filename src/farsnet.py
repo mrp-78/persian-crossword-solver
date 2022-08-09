@@ -1,4 +1,6 @@
 from suds.client import Client
+from hazm import Normalizer
+from src.utils import multiple_replace
 
 
 class FarsNet:
@@ -13,6 +15,18 @@ class FarsNet:
         for synset in synsets:
             senses = self.sense_service.service.getSensesBySynset(self.api_key, synset.id)
             for sense in senses:
-                if sense.value not in synonyms:
-                    synonyms.append(sense.value)
+                value = self.normalize(sense.value)
+                if value not in synonyms:
+                    synonyms.append(value)
+        print(synonyms)
         return synonyms
+
+    def normalize(self, word):
+        dic = {
+            'آ': 'ا',
+            'إ': 'ا',
+            'أ': 'ا',
+        }
+        normalizer = Normalizer()
+        normalized_word = normalizer.normalize(word)
+        return multiple_replace(dic, normalized_word)

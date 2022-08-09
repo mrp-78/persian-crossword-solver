@@ -1,5 +1,6 @@
 from colorama import init
-from crossword import CrossWord
+from src.crossword import CrossWord
+from src.farsnet import FarsNet
 
 
 def main():
@@ -16,4 +17,6 @@ def main():
 if __name__ == '__main__':
     crossword: CrossWord
     init(autoreset=True)
-    main()
+    fn = FarsNet()
+    print(fn.get_synonyms('لم'))
+    # main()

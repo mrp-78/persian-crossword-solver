@@ -1,6 +1,6 @@
-from farsnet import FarsNet
-from enums import Direction
-from question import Question
+from src.farsnet import FarsNet
+from src.enums import Direction
+from src.question import Question
 from copy import deepcopy
 from colorama import Fore, Back, Style
 

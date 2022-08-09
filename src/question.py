@@ -1,4 +1,4 @@
-from enums import Direction
+from src.enums import Direction
 
 
 class Question:
