@@ -1,24 +1,46 @@
+import logging
 from suds.client import Client
 from hazm import Normalizer
 from src.utils import multiple_replace
+from decouple import config
 
 
 class FarsNet:
     def __init__(self):
-        self.api_key = 'ed05dc4e-b1f4-46b5-afdc-6a0239122197'
+        self.api_key = config('FARSNET_API_KEY')
         self.synset_service = Client('http://farsnet.nlp.sbu.ac.ir/WebAPI/services/SynsetService?WSDL')
         self.sense_service = Client('http://farsnet.nlp.sbu.ac.ir/WebAPI/services/SenseService?WSDL')
+        self.normalizer = Normalizer()
+
+    def get_synsets_by_word(self, word: str):
+        retry = 0
+        while retry < 3:
+            try:
+                synsets = self.synset_service.service.getSynsetsByWord(self.api_key, 'EXACT', word)
+                return synsets
+            except Exception as e:
+                logging.error(e)
+                retry += 1
+
+    def get_senses_by_synset(self, synset):
+        retry = 0
+        while retry < 3:
+            try:
+                senses = self.sense_service.service.getSensesBySynset(self.api_key, synset.id)
+                return senses
+            except Exception as e:
+                logging.error(e)
+                retry += 1
 
     def get_synonyms(self, keyword: str):
-        synonyms = []
-        synsets = self.synset_service.service.getSynsetsByWord(self.api_key, 'EXACT', keyword)
+        synonyms = [keyword]
+        synsets = self.get_synsets_by_word(keyword)
         for synset in synsets:
-            senses = self.sense_service.service.getSensesBySynset(self.api_key, synset.id)
+            senses = self.get_senses_by_synset(synset)
             for sense in senses:
                 value = self.normalize(sense.value)
                 if value not in synonyms:
                     synonyms.append(value)
-        print(synonyms)
         return synonyms
 
     def normalize(self, word):
@@ -26,7 +48,12 @@ class FarsNet:
             'آ': 'ا',
             'إ': 'ا',
             'أ': 'ا',
+            'ؤ': 'و',
+            'ئ': 'ی',
+            'ة': 'ه',
+            'ك': 'ک',
+            '\u200c': '',
+            ' ': '',
         }
-        normalizer = Normalizer()
-        normalized_word = normalizer.normalize(word)
+        normalized_word = self.normalizer.normalize(word)
         return multiple_replace(dic, normalized_word)

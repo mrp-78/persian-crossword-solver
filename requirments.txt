@@ -1,3 +1,4 @@
 suds
 colorama
 hazm
+python-decouple

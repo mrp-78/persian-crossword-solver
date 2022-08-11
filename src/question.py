@@ -2,7 +2,8 @@ from src.enums import Direction
 
 
 class Question:
-    def __init__(self, question: str, x: int, y: int, length: int, direction: Direction, answer: str = ''):
+    def __init__(self, idx: int, question: str, x: int, y: int, length: int, direction: Direction, answer: str = ''):
+        self.idx = idx
         self.question = question
         self.x = x
         self.y = y

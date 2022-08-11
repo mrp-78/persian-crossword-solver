@@ -1,22 +1,21 @@
+import logging
 from colorama import init
 from src.crossword import CrossWord
-from src.farsnet import FarsNet
 
 
 def main():
     global crossword
-    rows = int(input('تعداد سطرهای جدول:\n'))
-    cols = int(input('تعداد ستون‌های جدول:\n'))
-    crossword = CrossWord(rows, cols)
-    crossword.print_table(True)
-    crossword.read_blocked_cells()
-    crossword.read_questions()
+    file_name = input('نام فایل ورودی را وارد کنید:\n')
+    logging.basicConfig(
+        filename=f"logs/{file_name}.log",
+        format="%(levelname)s - %(asctime)s - %(name)s - %(message)s",
+        level=logging.INFO
+    )
+    crossword = CrossWord(file_name)
     crossword.solve()
 
 
 if __name__ == '__main__':
     crossword: CrossWord
     init(autoreset=True)
-    fn = FarsNet()
-    print(fn.get_synonyms('لم'))
-    # main()
+    main()
