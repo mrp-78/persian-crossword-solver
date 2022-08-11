@@ -1,8 +1,7 @@
 import logging
 from suds.client import Client
-from hazm import Normalizer
-from src.utils import multiple_replace
 from decouple import config
+from src.normalizer import Normalizer
 
 
 class FarsNet:
@@ -38,22 +37,7 @@ class FarsNet:
         for synset in synsets:
             senses = self.get_senses_by_synset(synset)
             for sense in senses:
-                value = self.normalize(sense.value)
+                value = self.normalizer.normalize(sense.value)
                 if value not in synonyms:
                     synonyms.append(value)
         return synonyms
-
-    def normalize(self, word):
-        dic = {
-            'آ': 'ا',
-            'إ': 'ا',
-            'أ': 'ا',
-            'ؤ': 'و',
-            'ئ': 'ی',
-            'ة': 'ه',
-            'ك': 'ک',
-            '\u200c': '',
-            ' ': '',
-        }
-        normalized_word = self.normalizer.normalize(word)
-        return multiple_replace(dic, normalized_word)

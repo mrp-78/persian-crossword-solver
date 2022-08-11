@@ -11,8 +11,9 @@ def main():
         format="%(levelname)s - %(asctime)s - %(name)s - %(message)s",
         level=logging.INFO
     )
-    crossword = CrossWord(file_name)
+    crossword = CrossWord(f'./data/{file_name}')
     crossword.solve()
+    crossword.print_table()
 
 
 if __name__ == '__main__':

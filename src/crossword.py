@@ -4,38 +4,42 @@ from src.enums import Direction
 from src.question import Question
 from copy import deepcopy
 from colorama import Fore, Back, Style
+from src.normalizer import Normalizer
 
 
 class CrossWord:
-    def __init__(self, file_name: str):
+    def __init__(self, file_name: str, print_answers=True):
         self.farsnet = FarsNet()
         self.file_name = file_name
         self.questions = []
         self.crossword_table = [[]]
         self.rows = 0
         self.cols = 0
-        self.questions_list = []
         self.read_data_from_file()
+        self.normalizer = Normalizer()
+        self.print_answers = print_answers
 
     def read_data_from_file(self):
-        with open(f'./data/{self.file_name}', encoding='utf-8') as f:
+        with open(f'{self.file_name}', encoding='utf-8') as f:
             self.rows, self.cols = map(int, f.readline().split())
             self.crossword_table = [[None for j in range(self.cols)] for i in range(self.rows)]
             blocks = f.readline()
             for i in range(len(blocks)):
                 if blocks[i] == '1':
                     self.crossword_table[i // self.cols][i % self.cols] = '#'
-            self.questions_list = re.split('(&|#|@)', f.readline())
-            self.read_questions()
+            questions_list = re.split('(&|#|@)', f.readline())
+            answers_list = re.split('(&|#|@)', f.readline())
+            self.read_questions(questions_list, answers_list)
 
-    def get_all_question(self):
-        for q in self.questions_list:
+    def remove_special_chars_from_list(self, questions_list: []):
+        for q in questions_list:
             if re.match('[&#@\-\n]', q) or q == '':
                 continue
             yield q
 
-    def read_questions(self):
-        all_questions = self.get_all_question()
+    def read_questions(self, questions_list: [], answers_list: []):
+        all_questions = self.remove_special_chars_from_list(questions_list)
+        all_answers = self.remove_special_chars_from_list(answers_list)
         question_number = 1
         direction = Direction.HORIZONTAL
         for i in range(self.rows):
@@ -47,8 +51,7 @@ class CrossWord:
                 if j - y < 2:
                     y = j + 1
                     continue
-                q = next(all_questions)
-                question = Question(question_number, q, x, y, j - y, direction)
+                question = Question(question_number, next(all_questions), x, y, j - y, direction, next(all_answers))
                 question_number += 1
                 self.questions.append(question)
                 y = j + 1
@@ -62,8 +65,7 @@ class CrossWord:
                 if i - x < 2:
                     x = i + 1
                     continue
-                q = next(all_questions)
-                question = Question(question_number, q, x, y, i - x, direction)
+                question = Question(question_number, next(all_questions), x, y, i - x, direction, next(all_answers))
                 question_number += 1
                 self.questions.append(question)
                 x = i + 1
@@ -103,15 +105,15 @@ class CrossWord:
         returned_table = self.csp(self.crossword_table, 0)
         if returned_table:
             self.crossword_table = returned_table
-        self.print_table()
 
     def get_possible_answers(self):
         for question in self.questions:
             possible_answers = self.farsnet.get_synonyms(question.question)
             question.add_possible_answers(possible_answers)
-            print(f'question #{question.idx} - {question.direction} - ({question.x}, {question.y}) - length: {question.length} :')
-            print(f'\tquestion: {question.question}')
-            print(f'\tpossible answers: {possible_answers}\n')
+            if self.print_answers:
+                print(f'question #{question.idx} - {question.direction} - ({question.x}, {question.y}) - length: {question.length} :')
+                print(f'\tquestion: {question.question}')
+                print(f'\tpossible answers: {possible_answers}\n')
 
     def csp(self, table, question_number):
         questions = self.questions
@@ -144,3 +146,17 @@ class CrossWord:
                     return False
                 table[x + i][y] = answer[i]
         return table
+
+    def get_calculated_answer(self, question: Question):
+        ans = ''
+        vx = 0
+        vy = 0
+        if question.direction == Direction.HORIZONTAL:
+            vy = 1
+        else:
+            vx = 1
+        for x in range(question.length):
+            ch = self.crossword_table[question.x + vx*x][question.y + vy*x]
+            if ch is not None:
+                ans += ch
+        return self.normalizer.normalize(ans)
