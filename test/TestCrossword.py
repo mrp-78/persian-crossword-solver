@@ -1,12 +1,16 @@
 import unittest
 from src.crossword import CrossWord
+from src.evaluation import Evaluation
 
 
 class TestCrossword(unittest.TestCase):
     def run_test(self, file_name: str):
         print(f'# test {file_name}:')
-        crossword = CrossWord(f'../data/{file_name}', False)
+        crossword = CrossWord(f'../data/{file_name}', False, True)
         crossword.solve()
+        evaluation = Evaluation(crossword)
+        accuracy, precision = evaluation.get_accuracy_and_precision()
+        print(f'accuracy = {accuracy}\nprecision = {precision}')
         for question in crossword.questions:
             ans = crossword.get_calculated_answer(question)
             print(ans)

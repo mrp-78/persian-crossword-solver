@@ -8,16 +8,18 @@ from src.normalizer import Normalizer
 
 
 class CrossWord:
-    def __init__(self, file_name: str, print_answers=True):
+    def __init__(self, file_name: str, print_answers=True, read_answers=False):
         self.farsnet = FarsNet()
         self.file_name = file_name
         self.questions = []
         self.crossword_table = [[]]
         self.rows = 0
         self.cols = 0
+        self.black_blocks = 0
+        self.read_answers = read_answers
+        self.print_answers = print_answers
         self.read_data_from_file()
         self.normalizer = Normalizer()
-        self.print_answers = print_answers
 
     def read_data_from_file(self):
         with open(f'{self.file_name}', encoding='utf-8') as f:
@@ -26,9 +28,12 @@ class CrossWord:
             blocks = f.readline()
             for i in range(len(blocks)):
                 if blocks[i] == '1':
+                    self.black_blocks += 1
                     self.crossword_table[i // self.cols][i % self.cols] = '#'
             questions_list = re.split('(&|#|@)', f.readline())
-            answers_list = re.split('(&|#|@)', f.readline())
+            answers_list = False
+            if self.read_answers:
+                answers_list = re.split('(&|#|@)', f.readline())
             self.read_questions(questions_list, answers_list)
 
     def remove_special_chars_from_list(self, questions_list: []):
@@ -37,9 +42,10 @@ class CrossWord:
                 continue
             yield q
 
-    def read_questions(self, questions_list: [], answers_list: []):
+    def read_questions(self, questions_list: [], answers_list):
         all_questions = self.remove_special_chars_from_list(questions_list)
-        all_answers = self.remove_special_chars_from_list(answers_list)
+        if answers_list:
+            all_answers = self.remove_special_chars_from_list(answers_list)
         question_number = 1
         direction = Direction.HORIZONTAL
         for i in range(self.rows):
@@ -51,7 +57,10 @@ class CrossWord:
                 if j - y < 2:
                     y = j + 1
                     continue
-                question = Question(question_number, next(all_questions), x, y, j - y, direction, next(all_answers))
+                ans = ''
+                if answers_list:
+                    ans = next(all_answers)
+                question = Question(question_number, next(all_questions), x, y, j - y, direction, ans)
                 question_number += 1
                 self.questions.append(question)
                 y = j + 1
@@ -65,7 +74,10 @@ class CrossWord:
                 if i - x < 2:
                     x = i + 1
                     continue
-                question = Question(question_number, next(all_questions), x, y, i - x, direction, next(all_answers))
+                ans = ''
+                if answers_list:
+                    ans = next(all_answers)
+                question = Question(question_number, next(all_questions), x, y, i - x, direction, ans)
                 question_number += 1
                 self.questions.append(question)
                 x = i + 1
