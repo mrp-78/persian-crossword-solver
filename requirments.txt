@@ -2,3 +2,5 @@ suds
 colorama
 hazm
 python-decouple
+requests
+bs4

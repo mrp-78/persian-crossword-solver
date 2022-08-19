@@ -10,7 +10,9 @@ class Question:
         self.length = length
         self.direction = direction
         self.answer = answer
-        self.possible_answers = []
+        self.predicted_answer = None
+        self.possible_answers = {}
 
-    def add_possible_answers(self, possible_answers):
-        self.possible_answers += possible_answers
+    def add_possible_answers(self, possible_answers: [], source: str):
+        answers = [word for word in possible_answers if len(word) == self.length]
+        self.possible_answers[source] = answers

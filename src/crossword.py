@@ -1,5 +1,6 @@
 import re
 from src.farsnet import FarsNet
+from src.farsiyar import FarsiYar
 from src.enums import Direction
 from src.question import Question
 from copy import deepcopy
@@ -10,6 +11,7 @@ from src.normalizer import Normalizer
 class CrossWord:
     def __init__(self, file_name: str, print_answers=True, read_answers=False):
         self.farsnet = FarsNet()
+        self.farsiyar = FarsiYar()
         self.file_name = file_name
         self.questions = []
         self.crossword_table = [[]]
@@ -121,20 +123,23 @@ class CrossWord:
     def get_possible_answers(self):
         for question in self.questions:
             possible_answers = self.farsnet.get_synonyms(question.question)
-            question.add_possible_answers(possible_answers)
+            question.add_possible_answers(possible_answers, 'FarseNet')
+            possible_answers = self.farsiyar.get_synonyms(question.question)
+            question.add_possible_answers(possible_answers, 'FarsiYar')
             if self.print_answers:
                 print(f'question #{question.idx} - {question.direction} - ({question.x}, {question.y}) - length: {question.length} :')
                 print(f'\tquestion: {question.question}')
-                print(f'\tpossible answers: {possible_answers}\n')
+                print(f'\tpossible answers: {question.possible_answers}\n')
 
     def csp(self, table, question_number):
         questions = self.questions
         if question_number >= len(questions):
             return table
         current_question = questions[question_number]
-        for ans in current_question.possible_answers:
-            if ans == 'سیر':
-                pass
+        possible_answers = set()
+        for key in current_question.possible_answers:
+            possible_answers.update(current_question.possible_answers[key])
+        for ans in possible_answers:
             new_table = self.fill_answer_in_table(deepcopy(table), current_question, ans)
             if new_table:
                 returned_table = self.csp(deepcopy(new_table), question_number + 1)
@@ -160,6 +165,8 @@ class CrossWord:
         return table
 
     def get_calculated_answer(self, question: Question):
+        if question.predicted_answer:
+            return question.predicted_answer
         ans = ''
         vx = 0
         vy = 0
@@ -171,4 +178,6 @@ class CrossWord:
             ch = self.crossword_table[question.x + vx*x][question.y + vy*x]
             if ch is not None:
                 ans += ch
-        return self.normalizer.normalize(ans)
+        value = self.normalizer.normalize(ans)
+        question.predicted_answer = value
+        return value

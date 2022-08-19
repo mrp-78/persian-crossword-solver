@@ -32,12 +32,11 @@ class FarsNet:
                 retry += 1
 
     def get_synonyms(self, keyword: str):
-        synonyms = [keyword]
+        synonyms = {keyword}
         synsets = self.get_synsets_by_word(keyword)
         for synset in synsets:
             senses = self.get_senses_by_synset(synset)
             for sense in senses:
                 value = self.normalizer.normalize(sense.value)
-                if value not in synonyms:
-                    synonyms.append(value)
-        return synonyms
+                synonyms.add(value)
+        return self.normalizer.normalize_list(synonyms)
