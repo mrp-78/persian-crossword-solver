@@ -10,7 +10,10 @@ class TestCrossword(unittest.TestCase):
         crossword.solve()
         evaluation = Evaluation(crossword)
         accuracy, precision = evaluation.get_accuracy_and_precision()
+        modules_recall = evaluation.get_modules_recall()
         print(f'accuracy = {accuracy}\nprecision = {precision}')
+        for key in modules_recall:
+            print(f'module {key}: recall = {modules_recall[key]}')
         for question in crossword.questions:
             ans = crossword.get_calculated_answer(question)
             print(ans)

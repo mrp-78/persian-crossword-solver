@@ -28,10 +28,21 @@ class Evaluation:
             for j in range(self.crossword.cols):
                 if self.evaluation_table[i][j]:
                     t += 1
-                elif self.evaluation_table[i][j] is None:
-                    pass
-                else:
+                elif self.evaluation_table[i][j] is False:
                     f += 1
+                else:
+                    pass
         accuracy = t / (self.crossword.rows * self.crossword.cols - self.crossword.black_blocks)
         precision = t / (t+f)
         return accuracy, precision
+
+    def get_modules_recall(self):
+        modules_recall = {}
+        for key in self.crossword.questions[0].possible_answers:
+            t = 0
+            for question in self.crossword.questions:
+                predicted_answer = self.crossword.get_calculated_answer(question)
+                if predicted_answer in question.possible_answers[key]:
+                    t += 1
+            modules_recall[key] = t / len(self.crossword.questions)
+        return modules_recall
