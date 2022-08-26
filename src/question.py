@@ -11,8 +11,9 @@ class Question:
         self.direction = direction
         self.answer = answer
         self.predicted_answer = None
-        self.possible_answers = {}
+        self.possible_answers = []
+        self.answers_by_source = {}
 
-    def add_possible_answers(self, possible_answers: [], source: str):
-        answers = [word for word in possible_answers if len(word) == self.length]
-        self.possible_answers[source] = answers
+    def add_possible_answers(self, possible_answers: [], answers_by_source: {}):
+        self.possible_answers = possible_answers
+        self.answers_by_source = answers_by_source

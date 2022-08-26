@@ -1,17 +1,19 @@
 import re
-from src.farsnet import FarsNet
-from src.farsiyar import FarsiYar
+import logging
 from src.enums import Direction
 from src.question import Question
 from copy import deepcopy
 from colorama import Fore, Back, Style
 from src.normalizer import Normalizer
+from src.answers import Answers
+from src.crosswordTable import CrossWordTable
+from heapq import heappop, heappush, heapify
 
 
 class CrossWord:
     def __init__(self, file_name: str, print_answers=True, read_answers=False):
-        self.farsnet = FarsNet()
-        self.farsiyar = FarsiYar()
+        self.answer_collector = Answers(print_answers)
+        self.normalizer = Normalizer()
         self.file_name = file_name
         self.questions = []
         self.crossword_table = [[]]
@@ -21,7 +23,7 @@ class CrossWord:
         self.read_answers = read_answers
         self.print_answers = print_answers
         self.read_data_from_file()
-        self.normalizer = Normalizer()
+        self.best_answer = None
 
     def read_data_from_file(self):
         with open(f'{self.file_name}', encoding='utf-8') as f:
@@ -115,37 +117,45 @@ class CrossWord:
             print(Style.BRIGHT + Back.BLACK + Fore.LIGHTWHITE_EX + '-' * (4 * self.cols + 1))
 
     def solve(self):
-        self.get_possible_answers()
-        returned_table = self.csp(self.crossword_table, 0)
-        if returned_table:
-            self.crossword_table = returned_table
-
-    def get_possible_answers(self):
         for question in self.questions:
-            possible_answers = self.farsnet.get_synonyms(question.question)
-            question.add_possible_answers(possible_answers, 'FarseNet')
-            possible_answers = self.farsiyar.get_synonyms(question.question)
-            question.add_possible_answers(possible_answers, 'FarsiYar')
-            if self.print_answers:
-                print(f'question #{question.idx} - {question.direction} - ({question.x}, {question.y}) - length: {question.length} :')
-                print(f'\tquestion: {question.question}')
-                print(f'\tpossible answers: {question.possible_answers}\n')
+            self.answer_collector.collect_answers(question)
+        self.questions.sort(key=lambda x: len(x.possible_answers))
+        self.csp()
+        self.crossword_table = self.best_answer.table
 
-    def csp(self, table, question_number):
-        questions = self.questions
-        if question_number >= len(questions):
-            return table
-        current_question = questions[question_number]
-        possible_answers = set()
-        for key in current_question.possible_answers:
-            possible_answers.update(current_question.possible_answers[key])
-        for ans in possible_answers:
-            new_table = self.fill_answer_in_table(deepcopy(table), current_question, ans)
-            if new_table:
-                returned_table = self.csp(deepcopy(new_table), question_number + 1)
-                if returned_table:
-                    return returned_table
-        return False
+    def csp(self):
+        i = 0
+        heap = []
+        heapify(heap)
+        crossword_table = CrossWordTable(self.crossword_table, 0.001, 0, 0)
+        heappush(heap, crossword_table)
+        while len(heap) > 0:
+            i += 1
+            crossword_table: CrossWordTable = heappop(heap)
+            question_number = crossword_table.current_question
+            if crossword_table.filled_questions >= len(self.questions):
+                self.best_answer = crossword_table
+                return
+            if self.best_answer is not None and len(self.questions) - question_number + crossword_table.filled_questions < self.best_answer.filled_questions:
+                if question_number <= len(self.questions) // 2:
+                    logging.debug(f'prune question_number={question_number} filled_questions={crossword_table.filled_questions} best_answer.filled_questions={self.best_answer.filled_questions} len(heap)={len(heap)}')
+                continue
+            if crossword_table.current_question >= len(self.questions):
+                continue
+            ct = CrossWordTable(crossword_table.table, crossword_table.score, question_number + 1, crossword_table.filled_questions)
+            heappush(heap, ct)
+            current_question: Question = self.questions[question_number]
+            answers = current_question.possible_answers
+            for ans in answers:
+                new_table = self.fill_answer_in_table(deepcopy(crossword_table.table), current_question, ans)
+                if new_table:
+                    ct = CrossWordTable(new_table, (answers[ans]*crossword_table.score + crossword_table.filled_questions) / (crossword_table.filled_questions + 1), question_number + 1, crossword_table.filled_questions + 1)
+                    heappush(heap, ct)
+                    if self.best_answer is None \
+                            or ct.score > self.best_answer.score \
+                            or ct.filled_questions > self.best_answer.filled_questions:
+                        self.best_answer = ct
+        logging.info(f'{self.file_name}: searches_states={i}')
 
     def fill_answer_in_table(self, table: [[]], question: Question, answer: str):
         if len(answer) != question.length:
