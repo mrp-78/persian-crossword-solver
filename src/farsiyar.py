@@ -49,5 +49,6 @@ class FarsiYar:
         synonyms.update(similar_words)
         for word in similar_words:
             normalized_word = self.normalizer.normalize(word)
+            normalized_word = self.normalizer.prepare_word_for_table(normalized_word)
             synonyms.update(self.extract_synonyms(normalized_word))
         return self.normalizer.normalize_list(synonyms)

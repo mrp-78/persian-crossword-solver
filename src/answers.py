@@ -8,7 +8,7 @@ class Answers:
     def __init__(self, print_answers):
         self.print_answers = print_answers
         self.farsnet = FarsNet()
-        self.farsiyar = FarsiYar()
+        # self.farsiyar = FarsiYar()
         self.normalizer = Normalizer()
 
     def collect_answers(self, question: Question):
@@ -30,12 +30,12 @@ class Answers:
     def get_synonyms(self, question, length):
         farsnet_answers, farsiyar_answers = set(), set()
         farsnet_answers.update(self.farsnet.get_synonyms(question))
-        farsiyar_answers.update(self.farsiyar.get_synonyms(question))
+        # farsiyar_answers.update(self.farsiyar.get_synonyms(question))
         question_words = question.split(' و ')
         if len(question_words) >= 2:
             for word in question_words:
                 farsnet_answers.update(self.farsnet.get_synonyms(word))
-                farsiyar_answers.update(self.farsiyar.get_synonyms(word))
+                # farsiyar_answers.update(self.farsiyar.get_synonyms(word))
         new_farsnet_answers, new_farsiyar_answers = set(), set()
         for ans in farsnet_answers:
             if len(ans) == length:

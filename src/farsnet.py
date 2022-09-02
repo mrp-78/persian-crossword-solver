@@ -38,5 +38,6 @@ class FarsNet:
             senses = self.get_senses_by_synset(synset)
             for sense in senses:
                 value = self.normalizer.normalize(sense.value)
+                value = self.normalizer.prepare_word_for_table(value)
                 synonyms.add(value)
         return self.normalizer.normalize_list(synonyms)

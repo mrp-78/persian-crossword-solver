@@ -41,7 +41,7 @@ class Normalizer:
     def prepare_word_for_table(word):
         dic = {
             r'\s': '',
-            r'‌': '‌',
+            r'‌': '',
             r'\((.*?)\)': '',
         }
         return multiple_replace(dic, word)

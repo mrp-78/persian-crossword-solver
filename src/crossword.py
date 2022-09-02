@@ -1,17 +1,19 @@
 import re
 import logging
-from src.enums import Direction
+from src.enums import Direction, AppEnvironment
 from src.question import Question
-from copy import deepcopy
-from colorama import Fore, Back, Style
 from src.normalizer import Normalizer
 from src.answers import Answers
 from src.crosswordTable import CrossWordTable
+from src.evaluation import Evaluation
+from copy import deepcopy
+from colorama import Fore, Back, Style
 from heapq import heappop, heappush, heapify
+from decouple import config
 
 
 class CrossWord:
-    def __init__(self, file_name: str, print_answers=True, read_answers=False):
+    def __init__(self, file_name: str, print_answers=True, read_answers=True):
         self.answer_collector = Answers(print_answers)
         self.normalizer = Normalizer()
         self.file_name = file_name
@@ -24,6 +26,7 @@ class CrossWord:
         self.print_answers = print_answers
         self.read_data_from_file()
         self.best_answer = None
+        self.evaluation_table = None
 
     def read_data_from_file(self):
         with open(f'{self.file_name}', encoding='utf-8') as f:
@@ -107,7 +110,14 @@ class CrossWord:
                     print(Style.BRIGHT + Back.BLACK + Fore.LIGHTWHITE_EX + '|', end='')
                     print(Style.BRIGHT + Back.LIGHTWHITE_EX + Fore.LIGHTWHITE_EX + f' {value} ', end='')
                 else:
-                    print(Style.BRIGHT + Back.BLACK + Fore.LIGHTWHITE_EX + f'| {value} ', end='')
+                    if self.evaluation_table is not None and self.evaluation_table[i][j] is not None:
+                        print(Style.BRIGHT + Back.BLACK + Fore.LIGHTWHITE_EX + '|', end='')
+                        if self.evaluation_table[i][j]:
+                            print(Style.BRIGHT + Back.GREEN + Fore.LIGHTWHITE_EX + f' {value} ', end='')
+                        else:
+                            print(Style.BRIGHT + Back.RED + Fore.LIGHTWHITE_EX + f' {value} ', end='')
+                    else:
+                        print(Style.BRIGHT + Back.BLACK + Fore.LIGHTWHITE_EX + f'| {value} ', end='')
             print(Style.BRIGHT + Back.BLACK + Fore.LIGHTWHITE_EX + '|', end='')
             if is_empty:
                 print(f' {i + 1} ', end='')
@@ -122,6 +132,10 @@ class CrossWord:
         self.questions.sort(key=lambda x: len(x.possible_answers))
         self.csp()
         self.crossword_table = self.best_answer.table
+        if config('APP_ENV') == AppEnvironment.DEVELOPMENT.value:
+            evaluation = Evaluation(self)
+            evaluation.print_results()
+            self.evaluation_table = evaluation.calculate_evaluation_table()
 
     def csp(self):
         i = 0
@@ -131,6 +145,8 @@ class CrossWord:
         heappush(heap, crossword_table)
         while len(heap) > 0:
             i += 1
+            if i % 50000 == 0:
+                logging.info(f'state number={i} heap length={len(heap)}')
             crossword_table: CrossWordTable = heappop(heap)
             question_number = crossword_table.current_question
             if crossword_table.filled_questions >= len(self.questions):
@@ -188,6 +204,7 @@ class CrossWord:
             ch = self.crossword_table[question.x + vx*x][question.y + vy*x]
             if ch is not None:
                 ans += ch
-        value = self.normalizer.normalize(ans)
-        question.predicted_answer = value
-        return value
+            else:
+                ans += ' '
+        question.predicted_answer = ans
+        return ans

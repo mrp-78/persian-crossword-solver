@@ -1,9 +1,8 @@
-from src.crossword import CrossWord
 from src.enums import Direction
 
 
 class Evaluation:
-    def __init__(self, crossword: CrossWord):
+    def __init__(self, crossword):
         self.crossword = crossword
         self.evaluation_table = self.calculate_evaluation_table()
 
@@ -19,7 +18,8 @@ class Evaluation:
                 vx = 1
             for i in range(question.length):
                 if ans != '':
-                    table[question.x + vx * i][question.y + vy * i] = ans[i] == question.answer[i]
+                    if ans[i] != ' ':
+                        table[question.x + vx * i][question.y + vy * i] = ans[i] == question.answer[i]
         return table
 
     def get_accuracy_and_precision(self):
@@ -38,11 +38,18 @@ class Evaluation:
 
     def get_modules_recall(self):
         modules_recall = {}
-        for key in self.crossword.questions[0].possible_answers:
+        for key in self.crossword.questions[0].answers_by_source:
             t = 0
             for question in self.crossword.questions:
                 predicted_answer = self.crossword.get_calculated_answer(question)
-                if predicted_answer in question.possible_answers[key]:
+                if predicted_answer in question.answers_by_source[key]:
                     t += 1
             modules_recall[key] = t / len(self.crossword.questions)
         return modules_recall
+
+    def print_results(self):
+        accuracy, precision = self.get_accuracy_and_precision()
+        modules_recall = self.get_modules_recall()
+        print(f'accuracy = {accuracy}\nprecision = {precision}')
+        for key in modules_recall:
+            print(f'module {key}: recall = {modules_recall[key]}')
