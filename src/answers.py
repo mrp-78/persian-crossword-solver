@@ -19,8 +19,8 @@ class Answers:
         question_text = self.normalizer.normalize(question.question)
         answers_by_source = self.get_synonyms(question_text, question.length)
         answers_by_source['es_wikipedia'] = {}
-        if len(question_text.split()) > 1:
-            answers_by_source['es_wikipedia'] = self.wikipedia_corpus.get_answers_from_clue(question_text, question.length)
+        # if len(question_text.split()) > 1:
+        #     answers_by_source['es_wikipedia'] = self.wikipedia_corpus.get_answers_from_clue(question_text, question.length)
         for key in answers_by_source:
             for ans in answers_by_source[key]:
                 if ans not in answers_probability:
@@ -31,6 +31,9 @@ class Answers:
             print(f'\tquestion: {question_text}')
             print(f'\tpossible answers: {answers_by_source}\n')
         question.add_possible_answers(answers_probability, answers_by_source)
+        if len(answers_probability) > 0:
+            return True
+        return False
 
     def get_synonyms(self, question, length):
         farsnet_answers = self.farsnet.get_synonyms(question, length)

@@ -1,4 +1,5 @@
 from src.enums import Direction
+from src.crosswordUtils import get_calculated_answer
 
 
 class Evaluation:
@@ -9,7 +10,7 @@ class Evaluation:
     def calculate_evaluation_table(self):
         table = [[None for j in range(self.crossword.cols)] for i in range(self.crossword.rows)]
         for question in self.crossword.questions:
-            ans = self.crossword.get_calculated_answer(question)
+            ans = get_calculated_answer(self.crossword, question)
             vx = 0
             vy = 0
             if question.direction == Direction.HORIZONTAL:
@@ -41,7 +42,7 @@ class Evaluation:
         for key in self.crossword.questions[0].answers_by_source:
             t = 0
             for question in self.crossword.questions:
-                predicted_answer = self.crossword.get_calculated_answer(question)
+                predicted_answer = get_calculated_answer(self.crossword, question)
                 if predicted_answer in question.answers_by_source[key]:
                     t += 1
             modules_recall[key] = t / len(self.crossword.questions)

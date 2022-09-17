@@ -1,6 +1,8 @@
 import logging
 from colorama import init
 from src.crossword import CrossWord
+from src.crosswordUtils import read_crossword_from_file, print_table
+from src.crosswordSolver import CrosswordSolver
 
 
 def main():
@@ -11,9 +13,10 @@ def main():
         format="%(levelname)s - %(asctime)s - %(name)s - %(message)s",
         level=logging.INFO
     )
-    crossword = CrossWord(f'./data/{file_name}')
-    crossword.solve()
-    crossword.print_table()
+    crossword = read_crossword_from_file(f'./data/{file_name}', True)
+    crossword_solver = CrosswordSolver(crossword, True)
+    crossword = crossword_solver.solve()
+    print_table(crossword)
 
 
 if __name__ == '__main__':

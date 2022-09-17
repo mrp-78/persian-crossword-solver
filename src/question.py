@@ -14,6 +14,7 @@ class Question:
         self.possible_answers = []
         self.answers_by_source = {}
         self.conflicts = 0
+        self.intersect_questions = []
 
     def add_possible_answers(self, possible_answers: [], answers_by_source: {}):
         self.possible_answers = possible_answers
