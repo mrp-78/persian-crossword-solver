@@ -25,7 +25,8 @@ class Normalizer:
             r'ك': 'ک',
             r'_': '‌',
             r'\u200c': '‌',
-            r'\((.*?)\)': '',
+            r'\((.*?)\)': '',  # FarsiYar and Wikipedia
+            r'رده:': '',  # Wikipedia
         }
         normalized_word = self.normalizer.normalize(word)
         normalized_word = multiple_replace(dic, normalized_word)

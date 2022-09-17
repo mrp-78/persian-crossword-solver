@@ -31,13 +31,16 @@ class FarsNet:
                 logging.error(e)
                 retry += 1
 
-    def get_synonyms(self, keyword: str):
-        synonyms = {keyword}
+    def get_synonyms(self, keyword: str, length: int):
+        synonyms = {}
+        if len(keyword) == length:
+            synonyms[keyword] = 0.9
         synsets = self.get_synsets_by_word(keyword)
         for synset in synsets:
             senses = self.get_senses_by_synset(synset)
             for sense in senses:
                 value = self.normalizer.normalize(sense.value)
                 value = self.normalizer.prepare_word_for_table(value)
-                synonyms.add(value)
-        return self.normalizer.normalize_list(synonyms)
+                if value not in synonyms and len(value) == length:
+                    synonyms[value] = 0.9
+        return synonyms

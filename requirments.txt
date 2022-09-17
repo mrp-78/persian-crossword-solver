@@ -4,3 +4,4 @@ hazm
 python-decouple
 requests
 bs4
+elasticsearch<7.14.0

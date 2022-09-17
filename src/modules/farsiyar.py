@@ -42,13 +42,26 @@ class FarsiYar:
                 logging.error(e)
                 retry += 1
 
-    def get_synonyms(self, keyword: str):
-        synonyms = {keyword}
-        synonyms.update(self.extract_synonyms(keyword))
+    def get_synonyms(self, keyword: str, length: int):
+        synonyms = {}
+        if len(keyword) == length:
+            synonyms[keyword] = 0.9
+        syn = self.extract_synonyms(keyword)
+        for word in syn:
+            value = self.normalizer.normalize(word)
+            value = self.normalizer.prepare_word_for_table(value)
+            if value not in synonyms and len(value) == length:
+                synonyms[value] = 0.9
         similar_words = self.get_similar_words(keyword)
-        synonyms.update(similar_words)
         for word in similar_words:
-            normalized_word = self.normalizer.normalize(word)
-            normalized_word = self.normalizer.prepare_word_for_table(normalized_word)
-            synonyms.update(self.extract_synonyms(normalized_word))
-        return self.normalizer.normalize_list(synonyms)
+            value = self.normalizer.normalize(word)
+            value = self.normalizer.prepare_word_for_table(value)
+            if value not in synonyms and len(value) == length:
+                synonyms[value] = 0.9
+            syn = self.extract_synonyms(value)
+            for w in syn:
+                value = self.normalizer.normalize(w)
+                value = self.normalizer.prepare_word_for_table(value)
+                if value not in synonyms and len(value) == length:
+                    synonyms[value] = 0.9
+        return synonyms

@@ -13,6 +13,7 @@ class Question:
         self.predicted_answer = None
         self.possible_answers = []
         self.answers_by_source = {}
+        self.conflicts = 0
 
     def add_possible_answers(self, possible_answers: [], answers_by_source: {}):
         self.possible_answers = possible_answers
