@@ -9,7 +9,8 @@ class Evaluation:
 
     def calculate_evaluation_table(self):
         table = [[None for j in range(self.crossword.cols)] for i in range(self.crossword.rows)]
-        for question in self.crossword.questions:
+        for qid in self.crossword.questions:
+            question = self.crossword.questions[qid]
             ans = get_calculated_answer(self.crossword, question)
             vx = 0
             vy = 0
@@ -39,9 +40,10 @@ class Evaluation:
 
     def get_modules_recall(self):
         modules_recall = {}
-        for key in self.crossword.questions[0].answers_by_source:
+        for key in self.crossword.questions[1].answers_by_source:
             t = 0
-            for question in self.crossword.questions:
+            for qid in self.crossword.questions:
+                question = self.crossword.questions[qid]
                 predicted_answer = get_calculated_answer(self.crossword, question)
                 if predicted_answer in question.answers_by_source[key]:
                     t += 1

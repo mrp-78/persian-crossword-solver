@@ -50,8 +50,8 @@ def read_questions(crossword: CrossWord, questions_list: [], answers_list):
             if answers_list:
                 ans = next(all_answers)
             question = Question(question_number, next(all_questions), x, y, j - y, direction, ans)
+            crossword.questions[question_number] = question
             question_number += 1
-            crossword.questions.append(question)
             y = j + 1
     direction = Direction.VERTICAL
     for j in range(crossword.cols):
@@ -67,21 +67,23 @@ def read_questions(crossword: CrossWord, questions_list: [], answers_list):
             if answers_list:
                 ans = next(all_answers)
             question = Question(question_number, next(all_questions), x, y, i - x, direction, ans)
+            crossword.questions[question_number] = question
             question_number += 1
-            crossword.questions.append(question)
             x = i + 1
 
 
 def calculate_questions_intersects(crossword: CrossWord):
-    for q1 in crossword.questions:
-        for q2 in crossword.questions:
+    for q1_idx in crossword.questions:
+        q1 = crossword.questions[q1_idx]
+        for q2_idx in crossword.questions:
+            q2 = crossword.questions[q2_idx]
             if q1.direction != q2.direction:
                 if q1.direction == Direction.HORIZONTAL:
-                    if q2.x <= q1.x <= q2.x + q2.length and q1.y <= q2.y <= q1.y + q1.length:
-                        q1.intersect_questions.append(q2)
+                    if q2.x <= q1.x < q2.x + q2.length and q1.y <= q2.y < q1.y + q1.length:
+                        q1.intersect_questions[q2.idx] = (q2.y - q1.y, q1.x - q2.x)
                 else:
-                    if q1.x <= q2.x <= q1.x + q1.length and q2.y <= q1.y <= q2.y + q2.length:
-                        q1.intersect_questions.append(q2)
+                    if q1.x <= q2.x < q1.x + q1.length and q2.y <= q1.y < q2.y + q2.length:
+                        q1.intersect_questions[q2.idx] = (q2.x - q1.x, q1.y - q2.y)
 
 
 def print_table(crossword: CrossWord, is_empty: bool = False):
@@ -142,13 +144,13 @@ def get_calculated_answer(crossword: CrossWord, question: Question):
     return ans
 
 
-def fill_answer_in_table(crossword: CrossWord, answer: str):
-    question = crossword.questions[crossword.current_question]
+def fill_answer_in_table(crossword: CrossWord, question: Question, answer: str):
     if len(answer) != question.length:
         return False, 0
     conflicted_blocks = 0
     x = question.x
     y = question.y
+    filled_blocks = []
     if question.direction == Direction.HORIZONTAL:
         for i in range(len(answer)):
             if crossword.crossword_table[x][y + i]:
@@ -156,6 +158,7 @@ def fill_answer_in_table(crossword: CrossWord, answer: str):
                     return False, 0
                 else:
                     conflicted_blocks += 1
+                    filled_blocks.append(i)
                     continue
             crossword.crossword_table[x][y + i] = answer[i]
     else:
@@ -165,6 +168,14 @@ def fill_answer_in_table(crossword: CrossWord, answer: str):
                     return False, 0
                 else:
                     conflicted_blocks += 1
+                    filled_blocks.append(i)
                     continue
             crossword.crossword_table[x + i][y] = answer[i]
+    for qid in question.intersect_questions:
+        p1, p2 = question.intersect_questions[qid]
+        q: Question = crossword.questions[qid]
+        if p1 in filled_blocks:
+            q.filled_blocks += 1
+            if q.filled_blocks > q.length:
+                raise Exception(f'Question.filled_blocks out of range for {q.idx}')
     return crossword, conflicted_blocks

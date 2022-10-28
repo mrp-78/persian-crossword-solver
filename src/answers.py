@@ -19,8 +19,10 @@ class Answers:
         question_text = self.normalizer.normalize(question.question)
         answers_by_source = self.get_synonyms(question_text, question.length)
         answers_by_source['es_wikipedia'] = {}
-        # if len(question_text.split()) > 1:
-        #     answers_by_source['es_wikipedia'] = self.wikipedia_corpus.get_answers_from_clue(question_text, question.length)
+        if len(question_text.split()) > 1:
+            question_words = question_text.split(' و ')
+            if not (len(question_words) == 2 and len(question_words[0].split()) == 1 and len(question_words[1].split()) == 1):
+                answers_by_source['es_wikipedia'] = self.wikipedia_corpus.get_answers_from_clue(question_text, question.length)
         for key in answers_by_source:
             for ans in answers_by_source[key]:
                 if ans not in answers_probability:
@@ -43,7 +45,9 @@ class Answers:
             for word in question_words:
                 farsnet_answers = merge_answers(farsnet_answers, self.farsnet.get_synonyms(word, length))
                 farsiyar_answers = merge_answers(farsiyar_answers, self.farsiyar.get_synonyms(word, length))
-        return {'FarsNet': farsnet_answers, 'FarsiYar': farsiyar_answers}
+        return {
+            'FarsNet': farsnet_answers,
+            'FarsiYar': farsiyar_answers}
 
     @staticmethod
     def get_probability(answers_by_source, answer):
