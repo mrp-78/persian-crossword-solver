@@ -1,4 +1,3 @@
-import re
 from src.question import Question
 from src.modules.farsnet import FarsNet
 from src.modules.farsiyar import FarsiYar
@@ -17,13 +16,35 @@ class Answers:
 
     def collect_answers(self, question: Question):
         answers_probability = {}
+        answers_by_source = {
+            'FarsNet': {},
+            'FarsiYar': {},
+            'es_wikipedia': {}
+        }
         question_text = self.normalizer.normalize(question.question)
+        question_words = question_text.split(' و ')
         answers_by_source = self.get_synonyms(question_text, question.length)
-        answers_by_source['es_wikipedia'] = {}
-        if len(question_text.split()) > 1:
-            question_words = question_text.split(' و ')
-            if not (len(question_words) == 2 and len(question_words[0].split()) == 1 and len(question_words[1].split()) == 1):
-                answers_by_source['es_wikipedia'] = self.wikipedia_corpus.get_answers_from_clue(question_text, question.length)
+        if len(question_text.split()) == 1:
+            answers_by_source['FarsNet'] = self.farsnet.get_synonyms(question_text, question.length)
+            answers_by_source['FarsiYar'] = self.farsiyar.get_synonyms(question_text, question.length)
+        elif len(question_words) == 2 and len(question_words[0].split()) == 1 and len(question_words[1].split()) == 1:
+            farsnet_answers = self.farsnet.get_synonyms(question_words[0], question.length)
+            farsiyar_answers = self.farsiyar.get_synonyms(question_words[0], question.length)
+            answers_by_source['FarsNet'] = merge_answers(
+                farsnet_answers,
+                self.farsnet.get_synonyms(question_words[1], question.length)
+            )
+            answers_by_source['FarsiYar'] = merge_answers(
+                farsiyar_answers,
+                self.farsiyar.get_synonyms(question_words[1], question.length)
+            )
+        elif question_text.startswith('مخالف ') or question_text.startswith('متضاد '):
+            answers_by_source['FarsNet'] = self.farsnet.get_antonyms(
+                self.normalizer.prepare_antonym_question(question_text),
+                question.length
+            )
+        else:
+            answers_by_source['es_wikipedia'] = self.wikipedia_corpus.get_answers_from_clue(question_text, question.length)
         for key in answers_by_source:
             for ans in answers_by_source[key]:
                 if ans not in answers_probability:
