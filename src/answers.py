@@ -1,3 +1,4 @@
+import re
 from src.question import Question
 from src.modules.farsnet import FarsNet
 from src.modules.farsiyar import FarsiYar
@@ -45,9 +46,15 @@ class Answers:
             for word in question_words:
                 farsnet_answers = merge_answers(farsnet_answers, self.farsnet.get_synonyms(word, length))
                 farsiyar_answers = merge_answers(farsiyar_answers, self.farsiyar.get_synonyms(word, length))
+        if question.startswith('مخالف ') or question.startswith('متضاد '):
+            farsnet_answers = merge_answers(
+                farsnet_answers,
+                self.farsnet.get_antonyms(self.normalizer.prepare_antonym_question(question), length)
+            )
         return {
             'FarsNet': farsnet_answers,
-            'FarsiYar': farsiyar_answers}
+            'FarsiYar': farsiyar_answers
+        }
 
     @staticmethod
     def get_probability(answers_by_source, answer):

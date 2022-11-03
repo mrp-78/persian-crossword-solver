@@ -39,6 +39,11 @@ class Normalizer:
         return re.sub(reg, '', word)
 
     @staticmethod
+    def prepare_antonym_question(question):
+        reg = r'(مخالف|متضاد) '
+        return re.sub(reg, '', question)
+
+    @staticmethod
     def prepare_word_for_table(word):
         dic = {
             r'\s': '',
