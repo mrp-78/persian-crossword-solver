@@ -7,7 +7,7 @@ from src.utils import merge_answers
 class WikipediaCorpus:
     def __init__(self):
         self.es = Elasticsearch(config('ES_HOST'))
-        self.index_name = config('ES_INDEX_NAME')
+        self.index_name = config('ES_WIKIPEDIA_INDEX_NAME')
         self.normalizer = Normalizer()
 
     def es_query(self, query: str):
@@ -34,18 +34,18 @@ class WikipediaCorpus:
                 possible_answers,
                 self.get_answers_from_string(doc['Title'], answer_length, score * 0.99)
             )
-            list_items = ['RedirectList', 'Links', 'Parents']
+            list_items = ['RedirectList', 'Links']
             for key in list_items:
                 for phrase in doc[key]:
                     possible_answers = merge_answers(
                         possible_answers,
                         self.get_answers_from_string(phrase, answer_length, score * 0.9)
                     )
-            for phrase in doc['Parents']:
-                possible_answers = merge_answers(
-                    possible_answers,
-                    self.get_answers_from_string(phrase, answer_length, score * 0.85)
-                )
+            # for phrase in doc['Parents']:
+            #     possible_answers = merge_answers(
+            #         possible_answers,
+            #         self.get_answers_from_string(phrase, answer_length, score * 0.85)
+            #     )
         return possible_answers
 
     def get_answers_from_string(self, phrase: str, answer_length: int, score: int):

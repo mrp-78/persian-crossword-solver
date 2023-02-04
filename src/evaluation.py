@@ -40,12 +40,13 @@ class Evaluation:
 
     def get_modules_recall(self):
         modules_recall = {}
-        for key in self.crossword.questions[1].answers_by_source:
+        modules = ['FarsNet', 'FarsiYar', 'es_wikipedia', 'crosswords', 'dehkhoda']
+        for key in modules:
             t = 0
             for qid in self.crossword.questions:
                 question = self.crossword.questions[qid]
                 predicted_answer = get_calculated_answer(self.crossword, question)
-                if predicted_answer in question.answers_by_source[key]:
+                if key in question.answers_by_source and predicted_answer in question.answers_by_source[key]:
                     t += 1
             modules_recall[key] = t / len(self.crossword.questions)
         return modules_recall

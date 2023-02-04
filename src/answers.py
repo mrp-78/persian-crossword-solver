@@ -2,6 +2,8 @@ from src.question import Question
 from src.modules.farsnet import FarsNet
 from src.modules.farsiyar import FarsiYar
 from src.modules.es_wikipedia import WikipediaCorpus
+from src.modules.es_crosswords import Crosswords
+from src.modules.es_dehkhoda import Dehkhoda
 from src.normalizer import Normalizer
 from src.utils import merge_answers
 
@@ -9,9 +11,11 @@ from src.utils import merge_answers
 class Answers:
     def __init__(self, print_answers):
         self.print_answers = print_answers
-        self.farsnet = FarsNet()
+        # self.farsnet = FarsNet()
         self.farsiyar = FarsiYar()
         self.wikipedia_corpus = WikipediaCorpus()
+        self.dekhoda = Dehkhoda()
+        self.crosswords = Crosswords()
         self.normalizer = Normalizer()
 
     def collect_answers(self, question: Question):
@@ -19,21 +23,23 @@ class Answers:
         answers_by_source = {
             'FarsNet': {},
             'FarsiYar': {},
-            'es_wikipedia': {}
+            'es_wikipedia': {},
+            'crosswords': {},
+            'dehkhoda': {}
         }
         question_text = self.normalizer.normalize(question.question)
         question_words = question_text.split(' و ')
         answers_by_source = self.get_synonyms(question_text, question.length)
         if len(question_text.split()) == 1:
-            answers_by_source['FarsNet'] = self.farsnet.get_synonyms(question_text, question.length)
+            # answers_by_source['FarsNet'] = self.farsnet.get_synonyms(question_text, question.length)
             answers_by_source['FarsiYar'] = self.farsiyar.get_synonyms(question_text, question.length)
         elif len(question_words) == 2 and len(question_words[0].split()) == 1 and len(question_words[1].split()) == 1:
-            farsnet_answers = self.farsnet.get_synonyms(question_words[0], question.length)
+            # farsnet_answers = self.farsnet.get_synonyms(question_words[0], question.length)
             farsiyar_answers = self.farsiyar.get_synonyms(question_words[0], question.length)
-            answers_by_source['FarsNet'] = merge_answers(
-                farsnet_answers,
-                self.farsnet.get_synonyms(question_words[1], question.length)
-            )
+            # answers_by_source['FarsNet'] = merge_answers(
+            #     # farsnet_answers,
+            #     self.farsnet.get_synonyms(question_words[1], question.length)
+            # )
             answers_by_source['FarsiYar'] = merge_answers(
                 farsiyar_answers,
                 self.farsiyar.get_synonyms(question_words[1], question.length)
@@ -45,6 +51,8 @@ class Answers:
             )
         else:
             answers_by_source['es_wikipedia'] = self.wikipedia_corpus.get_answers_from_clue(question_text, question.length)
+        answers_by_source['crosswords'] = self.crosswords.get_answers_from_clue(question_text, question.length)
+        answers_by_source['dehkhoda'] = self.dekhoda.get_answers_from_clue(question_text, question.length)
         for key in answers_by_source:
             for ans in answers_by_source[key]:
                 if ans not in answers_probability:
@@ -60,20 +68,20 @@ class Answers:
         return False
 
     def get_synonyms(self, question, length):
-        farsnet_answers = self.farsnet.get_synonyms(question, length)
+        # farsnet_answers = self.farsnet.get_synonyms(question, length)
         farsiyar_answers = self.farsiyar.get_synonyms(question, length)
         question_words = question.split(' و ')
         if len(question_words) == 2:
             for word in question_words:
-                farsnet_answers = merge_answers(farsnet_answers, self.farsnet.get_synonyms(word, length))
+                # farsnet_answers = merge_answers(farsnet_answers, self.farsnet.get_synonyms(word, length))
                 farsiyar_answers = merge_answers(farsiyar_answers, self.farsiyar.get_synonyms(word, length))
-        if question.startswith('مخالف ') or question.startswith('متضاد '):
-            farsnet_answers = merge_answers(
-                farsnet_answers,
-                self.farsnet.get_antonyms(self.normalizer.prepare_antonym_question(question), length)
-            )
+        # if question.startswith('مخالف ') or question.startswith('متضاد '):
+        #     farsnet_answers = merge_answers(
+        #         # farsnet_answers,
+        #         # self.farsnet.get_antonyms(self.normalizer.prepare_antonym_question(question), length)
+        #     )
         return {
-            'FarsNet': farsnet_answers,
+            # 'FarsNet': farsnet_answers,
             'FarsiYar': farsiyar_answers
         }
 

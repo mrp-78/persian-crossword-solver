@@ -11,7 +11,7 @@ def main():
         format="%(levelname)s - %(asctime)s - %(name)s - %(message)s",
         level=logging.INFO
     )
-    crossword = read_crossword_from_file(f'./data/{file_name}', True)
+    crossword = read_crossword_from_file(f'./test-data/{file_name}', True)
     crossword_solver = CrosswordSolver(crossword, True)
     crossword = crossword_solver.solve()
     print_table(crossword)

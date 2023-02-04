@@ -1,4 +1,5 @@
 import logging
+import time
 from src.crossword import CrossWord
 from src.enums import AppEnvironment
 from src.question import Question
@@ -33,6 +34,7 @@ class CrosswordSolver:
         return self.crossword
 
     def csp(self):
+        start_time = time.time()
         i = 0
         heap = []
         heapify(heap)
@@ -41,6 +43,9 @@ class CrosswordSolver:
         crossword_table.forward_questions.sort(key=lambda x: len(x.intersect_questions))
         heappush(heap, crossword_table)
         while len(heap) > 0:
+            if time.time() - start_time >= 10 * 60:
+                logging.info('timeout')
+                return
             i += 1
             if i % 10000 == 0:
                 logging.info(f'state number={i} heap length={len(heap)}')

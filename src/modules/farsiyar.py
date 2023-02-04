@@ -45,23 +45,23 @@ class FarsiYar:
     def get_synonyms(self, keyword: str, length: int):
         synonyms = {}
         if len(keyword) == length:
-            synonyms[keyword] = 0.9
+            synonyms[keyword] = 0.6
         syn = self.extract_synonyms(keyword)
         for word in syn:
             value = self.normalizer.normalize(word)
             value = self.normalizer.prepare_word_for_table(value)
             if value not in synonyms and len(value) == length:
-                synonyms[value] = 0.9
+                synonyms[value] = 0.6
         similar_words = self.get_similar_words(keyword)
         for word in similar_words:
             value = self.normalizer.normalize(word)
             value = self.normalizer.prepare_word_for_table(value)
             if value not in synonyms and len(value) == length:
-                synonyms[value] = 0.9
+                synonyms[value] = 0.6
             syn = self.extract_synonyms(value)
             for w in syn:
                 value = self.normalizer.normalize(w)
                 value = self.normalizer.prepare_word_for_table(value)
                 if value not in synonyms and len(value) == length:
-                    synonyms[value] = 0.9
+                    synonyms[value] = 0.6
         return synonyms
