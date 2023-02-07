@@ -32,5 +32,5 @@ class Dehkhoda:
             doc = self.normalizer.normalize(doc)
             doc = self.normalizer.prepare_word_for_table(doc)
             if len(doc) == answer_length:
-                possible_answers = merge_answers(possible_answers, {doc: ((5 - i) / 5) * 0.99})
+                possible_answers = merge_answers(possible_answers, {doc: ((size - i) / size) * 0.99})
         return possible_answers

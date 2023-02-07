@@ -45,10 +45,11 @@ class Answers:
                 self.farsiyar.get_synonyms(question_words[1], question.length)
             )
         elif question_text.startswith('مخالف ') or question_text.startswith('متضاد '):
-            answers_by_source['FarsNet'] = self.farsnet.get_antonyms(
-                self.normalizer.prepare_antonym_question(question_text),
-                question.length
-            )
+            # answers_by_source['FarsNet'] = self.farsnet.get_antonyms(
+            #     self.normalizer.prepare_antonym_question(question_text),
+            #     question.length
+            # )
+            pass
         else:
             answers_by_source['es_wikipedia'] = self.wikipedia_corpus.get_answers_from_clue(question_text, question.length)
         answers_by_source['crosswords'] = self.crosswords.get_answers_from_clue(question_text, question.length)
@@ -90,6 +91,5 @@ class Answers:
         p = 0
         for key in answers_by_source:
             if answer in answers_by_source[key]:
-                p += answers_by_source[key][answer]
-        return p / (len(answers_by_source))
-
+                p = max(p, answers_by_source[key][answer])
+        return p

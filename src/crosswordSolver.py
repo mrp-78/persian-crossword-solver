@@ -43,7 +43,7 @@ class CrosswordSolver:
         crossword_table.forward_questions.sort(key=lambda x: len(x.intersect_questions))
         heappush(heap, crossword_table)
         while len(heap) > 0:
-            if time.time() - start_time >= 10 * 60:
+            if time.time() - start_time >= 2 * 60:
                 logging.info('timeout')
                 return
             i += 1
@@ -58,7 +58,7 @@ class CrosswordSolver:
                 continue
 
             # Dynamic Variable Ordering
-            # crossword_table.forward_questions.sort(key=lambda x: len(x.possible_answers), reverse=True) # because of using pop functon we need tto use reverse
+            # crossword_table.forward_questions.sort(key=lambda x: len(x.possible_answers), reverse=True) # because of using pop functon we need to use reverse
             # crossword_table.forward_questions.sort(key=lambda x: len(x.intersect_questions))
             try:
                 current_question: Question = crossword_table.forward_questions.pop()

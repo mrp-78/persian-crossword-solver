@@ -30,13 +30,16 @@ for i in range(len(test_df_question)):
             })
     res = res['hits']['hits']
 
-    total = 15 if len(res) > 15 else len(res)
+    total = 10 if len(res) > 10 else len(res)
     ans_list = []
     for j in range(total):
         ans = normalizer.normalize(res[j]['_source']['title'])
         ans = normalizer.prepare_word_for_table(ans)
         ans_list.append(ans)
     if answer in ans_list:
+        print(question)
+        print(answer)
+        print(ans_list)
         TP += 1
 
 print('Evaluation Results')

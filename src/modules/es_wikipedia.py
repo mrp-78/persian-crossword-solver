@@ -25,8 +25,8 @@ class WikipediaCorpus:
         possible_answers = {}
         docs = self.es_query(clue)
         size = len(docs)
-        if size > 5:
-            size = 5
+        if size > 3:
+            size = 3
         for i in range(size):
             doc = docs[i]['_source']
             score = docs[i]['_score'] / 100
