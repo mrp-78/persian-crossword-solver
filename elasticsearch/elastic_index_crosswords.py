@@ -33,7 +33,7 @@ if not es.indices.exists(index=es_index):
 
 logging.info("starting to index documents ...")
 
-DATA_PATH = '../data/'
+DATA_PATH = '../data/train/'
 file_names = os.listdir(DATA_PATH)
 questions = []
 answers = []
@@ -56,19 +56,17 @@ df = pd.DataFrame(list(zip(questions, answers)), columns=['clue', 'answer'])
 df = df.drop_duplicates()
 data = df.to_numpy()
 
-print(len(data))
+actions = []
+for i in range(len(data)):
+    if i % 1000 == 0 and i != 0:
+        helpers.bulk(es, actions)
+        actions = []
+    actions.append({"_index": es_index, "_source": {
+        "clue": data[i][0],
+        "answer": data[i][1]
+    }})
 
-# actions = []
-# for i in range(len(data)):
-#     if i % 1000 == 0 and i != 0:
-#         helpers.bulk(es, actions)
-#         actions = []
-#     actions.append({"_index": es_index, "_source": {
-#         "clue": data[i][0],
-#         "answer": data[i][1]
-#     }})
-#
-# if len(actions) > 0:
-#     helpers.bulk(es, actions)
-#
-# logging.info("documents was indexed successfully!")
+if len(actions) > 0:
+    helpers.bulk(es, actions)
+
+logging.info("documents was indexed successfully!")
