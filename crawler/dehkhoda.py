@@ -13,7 +13,7 @@ class DehkhodaCrawler:
         self.es_index = config('ES_DEHKHODA_INDEX_NAME')
         self.create_es_index()
         self.base_url = 'https://dehkhoda.ut.ac.ir/fa/dictionary/'
-        self.from_page = 11000
+        self.from_page = 1
         self.to_page = 11445
         self.per_page = 30
         self.actions = []
