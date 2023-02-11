@@ -4,7 +4,7 @@ from elasticsearch import Elasticsearch
 from src.normalizer import Normalizer
 from src.modules.es_crosswords import Crosswords
 
-TEST_DF_PATH = 'df_question_answers_test_raw.csv'
+TEST_DF_PATH = '../data/dataframe/df_test.csv'
 
 normalizer = Normalizer()
 

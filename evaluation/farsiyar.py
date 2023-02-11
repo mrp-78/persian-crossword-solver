@@ -3,7 +3,7 @@ from src.normalizer import Normalizer
 from src.modules.farsiyar import FarsiYar
 from src.utils import merge_answers
 
-TEST_DF_PATH = 'df_question_answers_test_raw.csv'
+TEST_DF_PATH = '../data/dataframe/df_test.csv'
 
 normalizer = Normalizer()
 

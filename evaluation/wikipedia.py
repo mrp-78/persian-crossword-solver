@@ -1,7 +1,7 @@
 import pandas as pd
 from src.normalizer import Normalizer
 from src.modules.es_wikipedia import WikipediaCorpus
-TEST_DF_PATH = 'df_question_answers_test_raw.csv'
+TEST_DF_PATH = '../data/dataframe/df_test.csv'
 
 normalizer = Normalizer()
 

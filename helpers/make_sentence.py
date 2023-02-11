@@ -2,7 +2,7 @@ import pandas as pd
 from hazm import *
 import re
 
-DF_PATH = '../evaluation/df_question_answers_final.csv'
+DF_PATH = '../data/dataframe/df_train.csv'
 normalizer = Normalizer()
 tagger = POSTagger(model='../resources/postagger.model')
 lemmatizer = Lemmatizer()
@@ -121,12 +121,12 @@ def make_sentence(question, answer):
 
 
 df = pd.read_csv(DF_PATH, index_col='Unnamed: 0')
-# df = df.drop_duplicates()
+df = df.drop_duplicates()
 df_list = df.values.tolist()
 sentences = []
 answers = []
 for question, answer in df_list:
     answers.append(answer)
     sentences.append(make_sentence(question, answer))
-# df = pd.DataFrame({'question': sentences, 'answer': answers})
-# df.to_csv('unseen_test_sentences.csv')
+df = pd.DataFrame({'question': sentences, 'answer': answers})
+df.to_csv('unseen_test_sentences.csv')
